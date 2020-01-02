@@ -1,0 +1,29 @@
+---
+kit: Phishing kit 1
+description: foobar
+version: 0.1.0
+katch:
+- name: Katch1
+  description: Get on /admin, expect 200
+  request:
+    headers:
+      User-Agent: 'User-Agent'
+    method: GET
+    cookies:
+      cookie1: value1
+    data:
+      param1: value1
+  expects:
+    status_code: 200
+    response_contains: '16Shop'
+    response_regex: '<title (*.)>16Shop.*</title>'
+- name: Katch2 with code
+  description: Dynamically loads python code and waits for Boolean return
+  request:
+    headers:
+      User-Agent: 'User-Agent'
+    method: GET
+    cookies:
+      cookie1: value1
+    expects:
+      python_loc: './Katch2.py'
