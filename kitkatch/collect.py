@@ -109,6 +109,5 @@ def collect_info(url):
             for idx_url in open_index_urls:
                 if idx_url.endswith('zip'):
                     _LOGGER.info('Found ZIP file, possible kit. Downloading..')
-
-
+                    download_zip(idx_url)
     import ipdb; ipdb.set_trace()
