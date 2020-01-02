@@ -1,0 +1,17 @@
+aws_region = "us-gov-west-1"
+
+remote_state_s3_bucket_prefix = "zfgov-terraform"
+
+container_count = {
+  qa   = 1
+  stag = 1
+  prod = 4
+}
+
+cpu_mhz_env = {
+  qa   = 1500
+  stag = 1500
+  prod = 3000
+}
+
+ecr_url = "923224080585.dkr.ecr.us-gov-west-1.amazonaws.com"
