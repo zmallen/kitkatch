@@ -20,6 +20,6 @@ run:
 
 # Run the unit tests
 unittest:
-	py.test --disable-warnings -vv -s tests
+	python -m pytest -vv -s --disable-warnings tests/
 
 .PHONY: compose_build compose_up compose_down shell run unittest
