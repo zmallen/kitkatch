@@ -7,6 +7,7 @@ import datetime
 import hashlib
 import ssdeep
 import json
+from pygments import highlight, lexers, formatters
 from urllib.parse import urlparse, urljoin
 from os.path import splitext
 
@@ -128,7 +129,7 @@ def log_data(url, resp, now):
         'sha2': sha2,
         'md5': hashlib.md5(page_data.encode()).hexdigest(),
         'ssdeep': ssdeep.hash(page_data),
-        'has_forms': len(get_forms()) > 0
+        'has_forms': len(get_forms(page_data)) > 0
     }
     with open('%s.json' % full_path, 'a') as fd:
         _LOGGER.info('Writing out metadata for %s' % url)
@@ -167,7 +168,10 @@ def collect_info(url):
         if not resp.ok:
             _LOGGER.error('Error scraping %s, status code %s' % (candidate, str(r.status_code)))
             continue
-        log_data(url, resp, now)
+        payload = log_data(url, resp, now)
+        if payload['has_forms']:
+            _LOGGER.critical('%s has a form. Check for phishing page!' % url)
+            potential_form_urls.append(payload)
         open_index_urls = collect_indexed_links(resp.text, url)
         if len(open_index_urls) > 0:
             _LOGGER.info('Found open index! Processing for kits..')
@@ -176,3 +180,11 @@ def collect_info(url):
                     _LOGGER.info('Found compressed file, at %s, possible kit. Downloading..' % idx_url)
                     download_zip(idx_url)
                     potential_compressed_kit_urls.append(idx_url)
+    if len(potential_compressed_kit_urls) > 0:
+        formatted_json = json.dumps(potential_compressed_kit_urls, sort_keys=True, indent=4)
+        colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
+        _LOGGER.critical('The following URLs contained compressed files:\n%s' % colorful_json)
+    if len(potential_form_urls) > 0:
+        formatted_json = json.dumps(potential_form_urls, sort_keys=True, indent=4)
+        colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
+        _LOGGER.critical('The following URLs contained forms:\n %s' % colorful_json)
