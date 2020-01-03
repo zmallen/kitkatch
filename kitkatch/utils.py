@@ -22,7 +22,6 @@ def log_arguments(**kwargs):
     for k, v in kwargs.items():
         _LOGGER.info('argument %s => %s', k, v)
 
-
 def set_logger(level, output_fmt):
     fmt = '{' + \
           '"file":"%(pathname)s",' + \

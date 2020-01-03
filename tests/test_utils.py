@@ -1,18 +1,14 @@
 import os
-
 import pytest
 
-from apptemplate.utils import process_arguments
+from kitkatch.utils import process_arguments
 
 
 @pytest.fixture
 def clear_env():
     """ Clears any env vars that might have been set """
     env_vars = [
-        'NUM_WORKERS',
-        'KEYFILE_PATH',
-        'CERTFILE_PATH',
-        'NOT_ENABLED',
+        'URL',
         'LOG_LEVEL',
         'LOG_FORMAT',
     ]
@@ -38,48 +34,36 @@ def clear_env():
 @pytest.fixture
 def cli_arguments01():
     return {
-        'num_workers': 12,
-        'ssl_keyfile': 'keyfile.pem',
-        'ssl_certfile': 'certfile.pem',
-        'not_enabled': True,
+        'url': 'https://google.com/abcdefg',
         'log_level': 'warning',
-        'log_format': 'text',
+        'log_format': 'text'
     }
 
 
 @pytest.fixture
 def env_arguments01():
     return {
-        'NUM_WORKERS': '12',
-        'KEYFILE_PATH': 'keyfile.pem',
-        'CERTFILE_PATH': 'certfile.pem',
-        'NOT_ENABLED': 'True',
+        'URL': 'https://google.com/abcdefg',
         'LOG_LEVEL': 'warning',
-        'LOG_FORMAT': 'text',
+        'LOG_FORMAT': 'text'
     }
 
 
 @pytest.fixture
 def cli_arguments02():
     return {
-        'num_workers': 29,
-        'ssl_keyfile': None,
-        'ssl_certfile': None,
-        'not_enabled': False,
-        'log_level': 'debug',
-        'log_format': 'json',
+        'url': 'https://google.com/abcdefg',
+        'log_level': 'warning',
+        'log_format': 'text'
     }
 
 
 @pytest.fixture
 def env_arguments02():
     return {
-        'NUM_WORKERS': '29',
-        'KEYFILE_PATH': None,
-        'CERTFILE_PATH': None,
-        'NOT_ENABLED': None,
-        'LOG_LEVEL': 'debug',
-        'LOG_FORMAT': 'json',
+        'URL': 'https://google.com/abcdefg',
+        'LOG_LEVEL': 'warning',
+        'LOG_FORMAT': 'text'
     }
 
 
