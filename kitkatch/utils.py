@@ -14,6 +14,8 @@ def process_arguments(**kwargs):
     args['log_level'] = getenv('LOG_LEVEL', kwargs['log_level'])
     args['log_format'] = getenv('LOG_FORMAT', kwargs['log_format'])
     args['url'] = getenv('URL', kwargs['url'])
+    args['url_file'] = getenv('URL_FILE', kwargs['url_file'])
+    args['loot_dir'] = getenv('LOOT_DIR', kwargs['loot_dir'])
 
     return args
 

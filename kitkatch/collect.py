@@ -82,18 +82,18 @@ return: www.google.com/a/, www.google.com/a/b/..
 Doesnt need to return query as thats the original URL
 create nested dirs to make it easy to traverse each
 """
-def url_candidates(url):
+def url_candidates(url, loot_dir):
     urls = []
     parsed = urlparse(url)
     path = parsed.path
     if path == '':
-        return urls
+        return [url]
 
     scheme = parsed.scheme
     netloc = parsed.netloc
 
-    _LOGGER.info('Making directory structure for domain %s, structure -> %s' % (netloc, path))
-    os.makedirs(netloc + path, exist_ok=True)
+    _LOGGER.info('Making directory structure for domain %s, structure -> %s, under loot_dir -> %s' % (netloc, path, loot_dir))
+    os.makedirs(loot_dir + netloc + path, exist_ok=True)
 
     split_path = path.split('/')
     for i in range(len(split_path)):
@@ -113,12 +113,12 @@ def get_forms(body):
     soup = BeautifulSoup(body, 'html.parser')
     return soup.find_all('form')
 
-def log_data(url, resp, now):
+def log_data(url, resp, now, loot_dir):
     page_data = resp.text
     page_data_binary = page_data.encode()
     sha2 = hashlib.sha256(page_data_binary).hexdigest()
     parsed = urlparse(url)
-    full_path = parsed.netloc + parsed.path + sha2
+    full_path = loot_dir + parsed.netloc + parsed.path + sha2
     with open(full_path, 'a') as fd:
         _LOGGER.info('Writing out HTTP text body for %s' % url)
         fd.write(page_data)
@@ -136,10 +136,10 @@ def log_data(url, resp, now):
         json.dump(payload, fd, ensure_ascii=False, indent=4)
     return payload
 
-def download_zip(url):
+def download_zip(url, loot_dir):
     response = requests.get(url, stream=True)
     parsed = urlparse(url)
-    full_path = parsed.netloc + parsed.path
+    full_path = loot_dir + parsed.netloc + parsed.path
     with open(full_path, 'wb') as fd:
         for chunk in response.iter_content(chunk_size=512):
             if chunk:  # filter out keep-alive new chunks
@@ -155,12 +155,12 @@ def compressed_file_in_url(url):
 Parses and scrapes a URI for open dirs and downloads any .zip files there
 Will not recursively find open dirs that have more open dirs
 """
-def collect_info(url):
+def collect_info(url, loot_dir):
     now = datetime.datetime.now()
     potential_compressed_kit_urls = []
     potential_form_urls = []
     _LOGGER.info('Starting to fingerprint URL -> %s' % url)
-    candidates = url_candidates(url)
+    candidates = url_candidates(url, loot_dir)
     _LOGGER.info('Processing the following candidate URLs -> %s' % candidates)
     candidates_from_open_index = []
     for url in candidates:
@@ -168,7 +168,7 @@ def collect_info(url):
         if not resp.ok:
             _LOGGER.error('Error scraping %s, status code %s' % (candidate, str(r.status_code)))
             continue
-        payload = log_data(url, resp, now)
+        payload = log_data(url, resp, now, loot_dir)
         if payload['has_forms']:
             _LOGGER.critical('%s has a form. Check for phishing page!' % url)
             potential_form_urls.append(payload)
@@ -178,7 +178,7 @@ def collect_info(url):
             for idx_url in open_index_urls:
                 if compressed_file_in_url(idx_url):
                     _LOGGER.info('Found compressed file, at %s, possible kit. Downloading..' % idx_url)
-                    download_zip(idx_url)
+                    download_zip(idx_url, loot_dir)
                     potential_compressed_kit_urls.append(idx_url)
     if len(potential_compressed_kit_urls) > 0:
         formatted_json = json.dumps(potential_compressed_kit_urls, sort_keys=True, indent=4)
