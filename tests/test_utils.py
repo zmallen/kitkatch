@@ -11,6 +11,8 @@ def clear_env():
         'URL',
         'LOG_LEVEL',
         'LOG_FORMAT',
+        'URL_FILE',
+        'LOOT_DIR'
     ]
 
     existing_env_vars = {}
@@ -36,7 +38,9 @@ def cli_arguments01():
     return {
         'url': 'https://google.com/abcdefg',
         'log_level': 'warning',
-        'log_format': 'text'
+        'log_format': 'text',
+        'url_file': 'foobar',
+        'loot_dir': 'loot/'
     }
 
 
@@ -45,7 +49,9 @@ def env_arguments01():
     return {
         'URL': 'https://google.com/abcdefg',
         'LOG_LEVEL': 'warning',
-        'LOG_FORMAT': 'text'
+        'LOG_FORMAT': 'text',
+        'URL_FILE': 'foobar',
+        'LOOT_DIR': 'loot/'
     }
 
 
@@ -54,7 +60,9 @@ def cli_arguments02():
     return {
         'url': 'https://google.com/abcdefg',
         'log_level': 'warning',
-        'log_format': 'text'
+        'log_format': 'text',
+        'url_file': 'foobar',
+        'loot_dir': 'loot/'
     }
 
 
@@ -63,7 +71,9 @@ def env_arguments02():
     return {
         'URL': 'https://google.com/abcdefg',
         'LOG_LEVEL': 'warning',
-        'LOG_FORMAT': 'text'
+        'LOG_FORMAT': 'text',
+        'URL_FILE': 'foobar',
+        'LOOT_DIR': 'loot/'
     }
 
 

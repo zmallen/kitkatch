@@ -117,10 +117,10 @@ def test_build_url_from_parse():
 
 def test_url_candidates():
     url = 'https://ivan-the-impaler-phishman.000webhostapp.com/com-login-verify/your/account/amazon/signin.php'
-    candidates = collect.url_candidates(url)
+    candidates = collect.url_candidates(url, './loot')
     assert(len(candidates) == 6)
     url = 'https://ivan-the-impaler-phishman.000webhostapp.com/com-login-verify/'
-    candidates = collect.url_candidates(url)
+    candidates = collect.url_candidates(url, './loot')
     print(candidates)
     assert(len(candidates) == 2)
 
