@@ -7,7 +7,6 @@ import datetime
 import hashlib
 import ssdeep
 import json
-from pygments import highlight, lexers, formatters
 from urllib.parse import urlparse, urljoin
 from os.path import splitext
 
@@ -86,14 +85,15 @@ def url_candidates(url, loot_dir):
     urls = []
     parsed = urlparse(url)
     path = parsed.path
-    if path == '':
-        return [url]
-
     scheme = parsed.scheme
     netloc = parsed.netloc
 
     _LOGGER.info('Making directory structure for domain %s, structure -> %s, under loot_dir -> %s' % (netloc, path, loot_dir))
     os.makedirs(loot_dir + netloc + path, exist_ok=True)
+
+    if path == '' or path == '/':
+        _LOGGER.debug('%s has no path specified or is a / path, returning' % url)
+        return [url]
 
     split_path = path.split('/')
     for i in range(len(split_path)):
@@ -105,7 +105,8 @@ def url_candidates(url, loot_dir):
 def scrape(url):
     r = requests.get(
             url,
-            headers=build_headers()
+            headers=build_headers(),
+            allow_redirects = True
         )
     return r
 
@@ -118,12 +119,17 @@ def log_data(url, resp, now, loot_dir):
     page_data_binary = page_data.encode()
     sha2 = hashlib.sha256(page_data_binary).hexdigest()
     parsed = urlparse(url)
-    full_path = loot_dir + parsed.netloc + parsed.path + sha2
+    if parsed.path == '' or parsed.path == '/':
+        full_path = loot_dir + (parsed.netloc + '/') + ('index' + sha2)
+    else:
+        full_path = loot_dir + (parsed.netloc + '/') + (parsed.path + sha2)
     with open(full_path, 'a') as fd:
         _LOGGER.info('Writing out HTTP text body for %s' % url)
         fd.write(page_data)
     payload = {
         'status_code': resp.status_code,
+        'domain': parsed.netloc,
+        'path': parsed.path,
         'url': url,
         'time': str(now),
         'sha2': sha2,
@@ -155,8 +161,7 @@ def compressed_file_in_url(url):
 Parses and scrapes a URI for open dirs and downloads any .zip files there
 Will not recursively find open dirs that have more open dirs
 """
-def collect_info(url, loot_dir):
-    now = datetime.datetime.now()
+def collect_info(url, loot_dir, now):
     potential_compressed_kit_urls = []
     potential_form_urls = []
     _LOGGER.info('Starting to fingerprint URL -> %s' % url)
@@ -180,11 +185,4 @@ def collect_info(url, loot_dir):
                     _LOGGER.info('Found compressed file, at %s, possible kit. Downloading..' % idx_url)
                     download_zip(idx_url, loot_dir)
                     potential_compressed_kit_urls.append(idx_url)
-    if len(potential_compressed_kit_urls) > 0:
-        formatted_json = json.dumps(potential_compressed_kit_urls, sort_keys=True, indent=4)
-        colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
-        _LOGGER.critical('The following URLs contained compressed files:\n%s' % colorful_json)
-    if len(potential_form_urls) > 0:
-        formatted_json = json.dumps(potential_form_urls, sort_keys=True, indent=4)
-        colorful_json = highlight(formatted_json, lexers.JsonLexer(), formatters.TerminalFormatter())
-        _LOGGER.critical('The following URLs contained forms:\n %s' % colorful_json)
+    return (potential_compressed_kit_urls, potential_form_urls)
